@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LC Auto — Project Structure</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500;600&display=swap');
+
+  :root {
+    --bg: #0d1117;
+    --surface: #161b22;
+    --card: #1c2128;
+    --border: #30363d;
+    --gold: #e3b341;
+    --green: #3fb950;
+    --blue: #58a6ff;
+    --purple: #bc8cff;
+    --red: #f85149;
+    --orange: #d29922;
+    --muted: #6e7681;
+    --text: #e6edf3;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 40px 24px 80px;
+  }
+
+  .container { max-width: 900px; margin: 0 auto; }
+
+  /* Header */
+  .header {
+    margin-bottom: 36px;
+    padding-bottom: 24px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .header h1 {
+    font-size: 26px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 6px;
+  }
+
+  .header h1 span { color: var(--gold); }
+
+  .header p {
+    color: var(--muted);
+    font-size: 14px;
+    font-family: 'DM Mono', monospace;
+  }
+
+  /* Main layout */
+  .layout {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+  }
+
+  @media (max-width: 700px) { .layout { grid-template-columns: 1fr; } }
+
+  .panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+
+  .panel-header {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+    background: var(--card);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .panel-title {
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 0.05em;
+    color: var(--muted);
+    text-transform: uppercase;
+  }
+
+  .dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .dot-red { background: #f85149; }
+  .dot-yellow { background: #e3b341; }
+  .dot-green { background: #3fb950; }
+
+  /* Tree */
+  .tree {
+    padding: 16px;
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    line-height: 1.5;
+  }
+
+  .tree-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 0;
+    padding: 2px 0;
+    position: relative;
+  }
+
+  .tree-indent { color: var(--border); white-space: pre; user-select: none; flex-shrink: 0; }
+
+  .tree-icon { margin-right: 6px; flex-shrink: 0; font-size: 14px; }
+
+  .tree-name { color: var(--text); }
+  .tree-name.folder { color: var(--blue); font-weight: 500; }
+  .tree-name.py { color: var(--green); }
+  .tree-name.html { color: var(--orange); }
+  .tree-name.txt { color: var(--muted); }
+  .tree-name.md { color: var(--purple); }
+  .tree-name.env { color: var(--gold); }
+  .tree-name.db { color: var(--red); }
+  .tree-name.cfg { color: var(--muted); }
+
+  .tree-badge {
+    margin-left: auto;
+    padding: 1px 7px;
+    border-radius: 4px;
+    font-size: 10px;
+    letter-spacing: 0.05em;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  .badge-core { background: rgba(88,166,255,0.12); color: var(--blue); border: 1px solid rgba(88,166,255,0.25); }
+  .badge-you  { background: rgba(63,185,80,0.12);  color: var(--green); border: 1px solid rgba(63,185,80,0.25); }
+  .badge-auto { background: rgba(227,179,65,0.12); color: var(--gold); border: 1px solid rgba(227,179,65,0.25); }
+  .badge-gen  { background: rgba(188,140,255,0.12); color: var(--purple); border: 1px solid rgba(188,140,255,0.25); }
+
+  /* Info cards */
+  .info-grid {
+    margin-top: 20px;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+  }
+
+  @media (max-width: 600px) { .info-grid { grid-template-columns: 1fr; } }
+
+  .info-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px;
+  }
+
+  .info-card-title {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .info-card-title::before {
+    content: '';
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: currentColor;
+    display: inline-block;
+  }
+
+  .info-card-title.blue { color: var(--blue); }
+  .info-card-title.green { color: var(--green); }
+  .info-card-title.gold { color: var(--gold); }
+
+  .info-card ul { list-style: none; }
+  .info-card li {
+    font-size: 12px;
+    color: var(--text);
+    padding: 3px 0;
+    font-family: 'DM Mono', monospace;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .info-card li::before { content: '›'; color: var(--muted); }
+
+  /* Steps */
+  .steps-section {
+    margin-top: 20px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+
+  .steps-header {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+    background: var(--card);
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  .steps-body { padding: 16px; }
+
+  .step-row {
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+    padding: 10px 0;
+    border-bottom: 1px solid rgba(48,54,61,0.5);
+  }
+  .step-row:last-child { border-bottom: none; }
+
+  .step-num {
+    width: 24px; height: 24px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    font-weight: 500;
+  }
+
+  .step-num.s1 { background: rgba(88,166,255,0.15); color: var(--blue); }
+  .step-num.s2 { background: rgba(63,185,80,0.15); color: var(--green); }
+  .step-num.s3 { background: rgba(227,179,65,0.15); color: var(--gold); }
+  .step-num.s4 { background: rgba(188,140,255,0.15); color: var(--purple); }
+  .step-num.s5 { background: rgba(248,81,73,0.15); color: var(--red); }
+
+  .step-content { flex: 1; }
+  .step-title { font-size: 13px; font-weight: 500; color: var(--text); margin-bottom: 2px; }
+  .step-cmd {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--green);
+    background: rgba(63,185,80,0.07);
+    border: 1px solid rgba(63,185,80,0.15);
+    border-radius: 4px;
+    padding: 2px 8px;
+    display: inline-block;
+    margin-top: 4px;
+  }
+
+  /* Legend */
+  .legend {
+    margin-top: 20px;
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+    padding: 14px 16px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+  }
+
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: var(--muted);
+    font-family: 'DM Mono', monospace;
+  }
+
+  .legend-badge { padding: 1px 8px; border-radius: 4px; font-size: 10px; }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <div class="header">
+    <h1>LC <span>Auto</span> — Project Structure</h1>
+    <p>lpu-lc-automator/ · Python &amp; Full Stack Development · LPU</p>
+  </div>
+
+  <div class="layout">
+
+    <!-- Left: folder tree -->
+    <div class="panel">
+      <div class="panel-header">
+        <div class="dot dot-red"></div>
+        <div class="dot dot-yellow"></div>
+        <div class="dot dot-green"></div>
+        <span class="panel-title" style="margin-left:6px">lpu-lc-automator/</span>
+      </div>
+      <div class="tree">
+
+        <!-- Root -->
+        <div class="tree-item">
+          <span class="tree-icon">📁</span>
+          <span class="tree-name folder">lpu-lc-automator/</span>
+        </div>
+
+        <!-- .env -->
+        <div class="tree-item">
+          <span class="tree-indent">├── </span>
+          <span class="tree-icon">🔑</span>
+          <span class="tree-name env">.env</span>
+          <span class="tree-badge badge-you">you create</span>
+        </div>
+
+        <!-- .gitignore -->
+        <div class="tree-item">
+          <span class="tree-indent">├── </span>
+          <span class="tree-icon">🚫</span>
+          <span class="tree-name txt">.gitignore</span>
+          <span class="tree-badge badge-you">you create</span>
+        </div>
+
+        <!-- requirements.txt -->
+        <div class="tree-item">
+          <span class="tree-indent">├── </span>
+          <span class="tree-icon">📦</span>
+          <span class="tree-name txt">requirements.txt</span>
+          <span class="tree-badge badge-you">you create</span>
+        </div>
+
+        <!-- README.md -->
+        <div class="tree-item">
+          <span class="tree-indent">├── </span>
+          <span class="tree-icon">📝</span>
+          <span class="tree-name md">README.md</span>
+          <span class="tree-badge badge-core">provided</span>
+        </div>
+
+        <!-- main.py -->
+        <div class="tree-item">
+          <span class="tree-indent">├── </span>
+          <span class="tree-icon">🐍</span>
+          <span class="tree-name py">main.py</span>
+          <span class="tree-badge badge-core">provided</span>
+        </div>
+
+        <!-- index.html -->
+        <div class="tree-item">
+          <span class="tree-indent">├── </span>
+          <span class="tree-icon">🌐</span>
+          <span class="tree-name html">index.html</span>
+          <span class="tree-badge badge-core">provided</span>
+        </div>
+
+        <!-- results.db -->
+        <div class="tree-item">
+          <span class="tree-indent">├── </span>
+          <span class="tree-icon">🗄️</span>
+          <span class="tree-name db">results.db</span>
+          <span class="tree-badge badge-auto">auto-created</span>
+        </div>
+
+        <!-- chrome_profile/ -->
+        <div class="tree-item">
+          <span class="tree-indent">├── </span>
+          <span class="tree-icon">📂</span>
+          <span class="tree-name folder">chrome_profile/</span>
+          <span class="tree-badge badge-auto">auto-created</span>
+        </div>
+
+        <div class="tree-item">
+          <span class="tree-indent">│   └── </span>
+          <span class="tree-icon">⚙️</span>
+          <span class="tree-name cfg">Default/</span>
+        </div>
+
+        <!-- logs/ -->
+        <div class="tree-item">
+          <span class="tree-indent">└── </span>
+          <span class="tree-icon">📂</span>
+          <span class="tree-name folder">logs/</span>
+          <span class="tree-badge badge-auto">auto-created</span>
+        </div>
+
+        <div class="tree-item">
+          <span class="tree-indent">    └── </span>
+          <span class="tree-icon">📋</span>
+          <span class="tree-name txt">app.log</span>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Right: file descriptions -->
+    <div class="panel">
+      <div class="panel-header">
+        <span class="panel-title">File Descriptions</span>
+      </div>
+      <div class="tree" style="padding: 16px;">
+
+        <div style="margin-bottom:14px">
+          <div style="font-size:13px; font-weight:500; color:var(--green); margin-bottom:4px">🐍 main.py</div>
+          <div style="font-size:12px; color:var(--muted); line-height:1.6">FastAPI backend. Contains all 6 modules: problem fetcher, GPT solver, Selenium submitter, SQLite logger, REST API endpoints.</div>
+        </div>
+
+        <div style="margin-bottom:14px; padding-top:14px; border-top:1px solid var(--border)">
+          <div style="font-size:13px; font-weight:500; color:var(--orange); margin-bottom:4px">🌐 index.html</div>
+          <div style="font-size:12px; color:var(--muted); line-height:1.6">Single-page frontend. Input field, animated progress steps, solution viewer with syntax highlighting, submission history table.</div>
+        </div>
+
+        <div style="margin-bottom:14px; padding-top:14px; border-top:1px solid var(--border)">
+          <div style="font-size:13px; font-weight:500; color:var(--gold); margin-bottom:4px">🔑 .env</div>
+          <div style="font-size:12px; color:var(--muted); line-height:1.6; font-family:'DM Mono',monospace">
+            OPENAI_API_KEY=sk-...<br>
+            LEETCODE_EMAIL=you@email.com<br>
+            LEETCODE_PASSWORD=yourpass<br>
+            CHROME_PROFILE_PATH=./chrome_profile
+          </div>
+        </div>
+
+        <div style="margin-bottom:14px; padding-top:14px; border-top:1px solid var(--border)">
+          <div style="font-size:13px; font-weight:500; color:var(--muted); margin-bottom:4px">🚫 .gitignore</div>
+          <div style="font-size:12px; color:var(--muted); line-height:1.6; font-family:'DM Mono',monospace">
+            .env<br>chrome_profile/<br>results.db<br>logs/<br>__pycache__/<br>*.pyc
+          </div>
+        </div>
+
+        <div style="padding-top:14px; border-top:1px solid var(--border)">
+          <div style="font-size:13px; font-weight:500; color:var(--muted); margin-bottom:4px">📦 requirements.txt</div>
+          <div style="font-size:12px; color:var(--muted); line-height:1.6; font-family:'DM Mono',monospace">
+            fastapi<br>uvicorn<br>selenium<br>undetected-chromedriver<br>openai<br>requests<br>python-dotenv
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div><!-- /layout -->
+
+  <!-- Info cards -->
+  <div class="info-grid">
+    <div class="info-card">
+      <div class="info-card-title blue">Provided by Claude</div>
+      <ul>
+        <li>main.py</li>
+        <li>index.html</li>
+        <li>README.md</li>
+      </ul>
+    </div>
+    <div class="info-card">
+      <div class="info-card-title green">You Create</div>
+      <ul>
+        <li>.env  (secrets)</li>
+        <li>.gitignore</li>
+        <li>requirements.txt</li>
+      </ul>
+    </div>
+    <div class="info-card">
+      <div class="info-card-title gold">Auto-Generated</div>
+      <ul>
+        <li>results.db</li>
+        <li>chrome_profile/</li>
+        <li>logs/app.log</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Setup steps -->
+  <div class="steps-section">
+    <div class="steps-header">Setup in 5 steps</div>
+    <div class="steps-body">
+
+      <div class="step-row">
+        <div class="step-num s1">1</div>
+        <div class="step-content">
+          <div class="step-title">Create project folder &amp; paste the 3 provided files</div>
+          <div class="step-cmd">mkdir lpu-lc-automator &amp;&amp; cd lpu-lc-automator</div>
+        </div>
+      </div>
+
+      <div class="step-row">
+        <div class="step-num s2">2</div>
+        <div class="step-content">
+          <div class="step-title">Create requirements.txt and install dependencies</div>
+          <div class="step-cmd">pip install -r requirements.txt</div>
+        </div>
+      </div>
+
+      <div class="step-row">
+        <div class="step-num s3">3</div>
+        <div class="step-content">
+          <div class="step-title">Create .env file and add your API keys</div>
+          <div class="step-cmd">OPENAI_API_KEY=sk-... &nbsp; LEETCODE_EMAIL=... &nbsp; LEETCODE_PASSWORD=...</div>
+        </div>
+      </div>
+
+      <div class="step-row">
+        <div class="step-num s4">4</div>
+        <div class="step-content">
+          <div class="step-title">Start the FastAPI server</div>
+          <div class="step-cmd">uvicorn main:app --reload --port 8000</div>
+        </div>
+      </div>
+
+      <div class="step-row">
+        <div class="step-num s5">5</div>
+        <div class="step-content">
+          <div class="step-title">Open index.html in browser, enter a problem number and hit Solve &amp; Submit</div>
+          <div class="step-cmd">open index.html &nbsp;or&nbsp; visit http://localhost:8000</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+
+</div>
+</body>
+</html>
