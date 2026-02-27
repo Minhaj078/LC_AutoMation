@@ -1,0 +1,16 @@
+# Virtual Environment
+LCvenv/
+
+# Python
+__pycache__/
+*.pyc
+
+# Environment Variables
+.env
+
+# Database
+results.db
+
+# OS
+.DS_Store
+Thumbs.db

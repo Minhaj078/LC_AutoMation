@@ -1,0 +1,870 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LC Auto — Intelligent LeetCode Solver</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500&display=swap');
+
+  :root {
+    --bg: #0a0a0b;
+    --surface: #111113;
+    --card: #16161a;
+    --border: #2a2a30;
+    --gold: #c9a84c;
+    --gold-light: #e8c97a;
+    --cream: #f5f0e8;
+    --muted: #5a5a6a;
+    --green: #3fb950;
+    --red: #f85149;
+    --blue: #58a6ff;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--cream);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ── Grid background ── */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(201,168,76,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(201,168,76,0.03) 1px, transparent 1px);
+    background-size: 60px 60px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* ── Radial glow ── */
+  .glow-orb {
+    position: fixed;
+    width: 600px;
+    height: 600px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(201,168,76,0.06) 0%, transparent 70%);
+    top: -100px;
+    left: 50%;
+    transform: translateX(-50%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  main {
+    position: relative;
+    z-index: 1;
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 0 24px 80px;
+  }
+
+  /* ── Header ── */
+  header {
+    padding: 52px 0 44px;
+    text-align: center;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 52px;
+  }
+
+  .logo-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.35em;
+    color: var(--gold);
+    text-transform: uppercase;
+    margin-bottom: 16px;
+    display: block;
+  }
+
+  h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(38px, 6vw, 58px);
+    font-weight: 400;
+    color: var(--cream);
+    line-height: 1.1;
+    letter-spacing: -0.01em;
+  }
+
+  h1 em {
+    font-style: italic;
+    color: var(--gold-light);
+  }
+
+  .tagline {
+    margin-top: 14px;
+    font-size: 15px;
+    color: var(--muted);
+    font-weight: 300;
+    letter-spacing: 0.01em;
+  }
+
+  /* ── Stats row ── */
+  .stats-row {
+    display: flex;
+    justify-content: center;
+    gap: 40px;
+    margin-top: 28px;
+  }
+
+  .stat {
+    text-align: center;
+  }
+
+  .stat-num {
+    font-family: 'Playfair Display', serif;
+    font-size: 26px;
+    color: var(--gold-light);
+  }
+
+  .stat-lbl {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    color: var(--muted);
+    text-transform: uppercase;
+    display: block;
+    margin-top: 2px;
+  }
+
+  /* ── Input Section ── */
+  .input-section {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 40px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .input-section::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--gold), transparent);
+  }
+
+  .input-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--muted);
+    display: block;
+    margin-bottom: 16px;
+  }
+
+  .input-row {
+    display: flex;
+    gap: 14px;
+    align-items: stretch;
+  }
+
+  .num-input-wrap {
+    position: relative;
+    flex: 1;
+  }
+
+  .num-prefix {
+    position: absolute;
+    left: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-family: 'Playfair Display', serif;
+    font-style: italic;
+    color: var(--gold);
+    font-size: 18px;
+    pointer-events: none;
+  }
+
+  #problemNum {
+    width: 100%;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    color: var(--cream);
+    font-family: 'DM Mono', monospace;
+    font-size: 22px;
+    padding: 18px 20px 18px 48px;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    -moz-appearance: textfield;
+  }
+
+  #problemNum::-webkit-inner-spin-button,
+  #problemNum::-webkit-outer-spin-button { -webkit-appearance: none; }
+
+  #problemNum:focus {
+    border-color: var(--gold);
+    box-shadow: 0 0 0 3px rgba(201,168,76,0.12);
+  }
+
+  #problemNum::placeholder { color: var(--muted); }
+
+  .solve-btn {
+    background: var(--gold);
+    color: #0a0a0b;
+    border: none;
+    border-radius: 10px;
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 500;
+    font-size: 15px;
+    padding: 18px 32px;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.15s;
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .solve-btn:hover { background: var(--gold-light); transform: translateY(-1px); }
+  .solve-btn:active { transform: translateY(0); }
+  .solve-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+  .solve-btn svg { width: 16px; height: 16px; }
+
+  /* ── Status / Progress ── */
+  #statusBox {
+    display: none;
+    margin-top: 28px;
+  }
+
+  .progress-steps {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .step {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 12px 16px;
+    border-radius: 8px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    font-size: 14px;
+    color: var(--muted);
+    transition: all 0.3s;
+  }
+
+  .step.active {
+    border-color: var(--gold);
+    color: var(--cream);
+    background: rgba(201,168,76,0.06);
+  }
+
+  .step.done {
+    border-color: var(--green);
+    color: var(--cream);
+    background: rgba(63,185,80,0.06);
+  }
+
+  .step.error {
+    border-color: var(--red);
+    color: var(--red);
+    background: rgba(248,81,73,0.06);
+  }
+
+  .step-icon {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    font-size: 12px;
+    background: var(--border);
+  }
+
+  .step.active .step-icon { background: var(--gold); color: #0a0a0b; }
+  .step.done .step-icon { background: var(--green); color: #0a0a0b; }
+  .step.error .step-icon { background: var(--red); color: white; }
+
+  .step-text { flex: 1; }
+  .step-detail { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--muted); margin-top: 2px; }
+
+  /* ── Result Card ── */
+  #resultCard {
+    display: none;
+    margin-top: 32px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    overflow: hidden;
+    animation: slideUp 0.4s ease;
+  }
+
+  @keyframes slideUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .result-header {
+    padding: 20px 24px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .result-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 20px;
+    color: var(--cream);
+  }
+
+  .badges { display: flex; gap: 8px; align-items: center; }
+
+  .badge {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    padding: 4px 12px;
+    border-radius: 100px;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+
+  .badge-easy { background: rgba(63,185,80,0.15); color: var(--green); border: 1px solid rgba(63,185,80,0.3); }
+  .badge-medium { background: rgba(255,165,0,0.15); color: #ffa500; border: 1px solid rgba(255,165,0,0.3); }
+  .badge-hard { background: rgba(248,81,73,0.15); color: var(--red); border: 1px solid rgba(248,81,73,0.3); }
+  .badge-accepted { background: rgba(63,185,80,0.15); color: var(--green); border: 1px solid rgba(63,185,80,0.3); }
+  .badge-error { background: rgba(248,81,73,0.15); color: var(--red); border: 1px solid rgba(248,81,73,0.3); }
+
+  .result-meta {
+    padding: 16px 24px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    gap: 32px;
+    flex-wrap: wrap;
+  }
+
+  .meta-item { }
+  .meta-key {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--muted);
+    display: block;
+    margin-bottom: 4px;
+  }
+  .meta-val {
+    font-size: 14px;
+    color: var(--cream);
+  }
+
+  /* ── Code block ── */
+  .code-section {
+    position: relative;
+  }
+
+  .code-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 20px;
+    border-bottom: 1px solid var(--border);
+    background: rgba(201,168,76,0.04);
+  }
+
+  .code-lang {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--gold);
+  }
+
+  .copy-btn {
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--muted);
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    padding: 4px 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+    letter-spacing: 0.05em;
+  }
+
+  .copy-btn:hover { border-color: var(--gold); color: var(--gold); }
+
+  pre {
+    padding: 24px;
+    overflow-x: auto;
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    line-height: 1.7;
+    color: #cdd9e5;
+    max-height: 420px;
+  }
+
+  /* syntax highlight */
+  .kw { color: #ff7b72; }
+  .cm { color: #6e7681; font-style: italic; }
+  .fn { color: #d2a8ff; }
+  .st { color: #a5d6ff; }
+  .nb { color: #ffa657; }
+  .cn { color: #79c0ff; }
+
+  /* ── History Section ── */
+  #historySection {
+    margin-top: 52px;
+  }
+
+  .section-head {
+    display: flex;
+    align-items: baseline;
+    gap: 14px;
+    margin-bottom: 20px;
+  }
+
+  .section-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 22px;
+    color: var(--cream);
+  }
+
+  .count-pill {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 100px;
+    padding: 2px 10px;
+    color: var(--muted);
+  }
+
+  .history-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+
+  .history-table th {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--muted);
+    text-align: left;
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .history-table td {
+    padding: 12px 14px;
+    border-bottom: 1px solid rgba(42,42,48,0.5);
+    color: var(--cream);
+    vertical-align: middle;
+  }
+
+  .history-table tr:last-child td { border-bottom: none; }
+  .history-table tr:hover td { background: rgba(201,168,76,0.03); }
+
+  .hist-num {
+    font-family: 'DM Mono', monospace;
+    color: var(--gold);
+    font-size: 13px;
+  }
+
+  .hist-time {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+  }
+
+  .empty-history {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--muted);
+    font-size: 14px;
+    font-style: italic;
+    font-family: 'Playfair Display', serif;
+  }
+
+  /* ── Spinner ── */
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .spinner {
+    width: 14px;
+    height: 14px;
+    border: 2px solid rgba(0,0,0,0.2);
+    border-top-color: #0a0a0b;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    display: inline-block;
+  }
+
+  /* ── Link ── */
+  a.leet-link {
+    color: var(--blue);
+    text-decoration: none;
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+  }
+  a.leet-link:hover { text-decoration: underline; }
+
+  /* ── Responsive ── */
+  @media (max-width: 600px) {
+    .input-row { flex-direction: column; }
+    .result-meta { gap: 20px; }
+    pre { font-size: 12px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="glow-orb"></div>
+
+<main>
+
+  <!-- ── Header ── -->
+  <header>
+    <span class="logo-label">Lovely Professional University · Python & Full Stack Dev</span>
+    <h1>LC <em>Auto</em></h1>
+    <p class="tagline">Automated LeetCode problem solving &amp; submission — powered by GPT-4o &amp; Selenium</p>
+
+    <div class="stats-row" id="statsRow">
+      <div class="stat">
+        <div class="stat-num" id="statTotal">—</div>
+        <span class="stat-lbl">Solved</span>
+      </div>
+      <div class="stat">
+        <div class="stat-num" id="statAccepted">—</div>
+        <span class="stat-lbl">Accepted</span>
+      </div>
+      <div class="stat">
+        <div class="stat-num" id="statRate">—</div>
+        <span class="stat-lbl">Success Rate</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- ── Solver Input ── -->
+  <div class="input-section">
+    <label class="input-label" for="problemNum">Enter LeetCode Problem Number</label>
+    <div class="input-row">
+      <div class="num-input-wrap">
+        <span class="num-prefix">#</span>
+        <input id="problemNum" type="number" min="1" max="9999"
+               placeholder="e.g.  1" autocomplete="off"
+               onkeydown="if(event.key==='Enter') startSolve()">
+      </div>
+      <button class="solve-btn" id="solveBtn" onclick="startSolve()">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
+          <polygon points="5,3 13,8 5,13"/>
+        </svg>
+        Solve &amp; Submit
+      </button>
+    </div>
+
+    <!-- Progress Steps -->
+    <div id="statusBox">
+      <div class="progress-steps">
+        <div class="step" id="step1">
+          <div class="step-icon">1</div>
+          <div class="step-text">
+            <div>Fetching problem from LeetCode</div>
+            <div class="step-detail" id="step1d">Querying GraphQL API…</div>
+          </div>
+        </div>
+        <div class="step" id="step2">
+          <div class="step-icon">2</div>
+          <div class="step-text">
+            <div>Generating optimal solution with GPT-4o</div>
+            <div class="step-detail" id="step2d">Sending prompt to OpenAI…</div>
+          </div>
+        </div>
+        <div class="step" id="step3">
+          <div class="step-icon">3</div>
+          <div class="step-text">
+            <div>Launching browser &amp; injecting code</div>
+            <div class="step-detail" id="step3d">Selenium automation…</div>
+          </div>
+        </div>
+        <div class="step" id="step4">
+          <div class="step-icon">4</div>
+          <div class="step-text">
+            <div>Waiting for LeetCode verdict</div>
+            <div class="step-detail" id="step4d">Submitting &amp; parsing result…</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Result Card -->
+    <div id="resultCard">
+      <div class="result-header">
+        <div class="result-title" id="rTitle">—</div>
+        <div class="badges">
+          <span class="badge" id="rDiff">—</span>
+          <span class="badge" id="rStatus">—</span>
+        </div>
+      </div>
+      <div class="result-meta">
+        <div class="meta-item">
+          <span class="meta-key">Problem</span>
+          <span class="meta-val" id="rNum">—</span>
+        </div>
+        <div class="meta-item">
+          <span class="meta-key">Runtime</span>
+          <span class="meta-val" id="rRuntime">—</span>
+        </div>
+        <div class="meta-item">
+          <span class="meta-key">Memory</span>
+          <span class="meta-val" id="rMemory">—</span>
+        </div>
+        <div class="meta-item">
+          <span class="meta-key">LeetCode</span>
+          <a class="leet-link" id="rLink" href="#" target="_blank">Open ↗</a>
+        </div>
+      </div>
+      <div class="code-section">
+        <div class="code-header">
+          <span class="code-lang">Python 3 · GPT-4o Solution</span>
+          <button class="copy-btn" onclick="copyCode()">Copy</button>
+        </div>
+        <pre id="codeBlock"><code id="codeContent"></code></pre>
+      </div>
+    </div>
+
+  </div><!-- /input-section -->
+
+  <!-- ── History ── -->
+  <div id="historySection">
+    <div class="section-head">
+      <div class="section-title">Submission History</div>
+      <span class="count-pill" id="histCount">0</span>
+    </div>
+    <table class="history-table">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Title</th>
+          <th>Status</th>
+          <th>Runtime</th>
+          <th>Time</th>
+        </tr>
+      </thead>
+      <tbody id="histBody">
+        <tr><td colspan="5"><div class="empty-history">No submissions yet — solve your first problem above</div></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+</main>
+
+<script>
+  const API = 'http://localhost:8009';
+
+  // ── Stats ───────────────────────────────────────────────────────────────────
+  async function loadStats() {
+    try {
+      const r = await fetch(`${API}/api/stats`);
+      const d = await r.json();
+      document.getElementById('statTotal').textContent = d.total;
+      document.getElementById('statAccepted').textContent = d.accepted;
+      document.getElementById('statRate').textContent = d.success_rate;
+    } catch (_) {}
+  }
+
+  // ── History ─────────────────────────────────────────────────────────────────
+  async function loadHistory() {
+    try {
+      const r = await fetch(`${API}/api/history`);
+      const rows = await r.json();
+      const tbody = document.getElementById('histBody');
+      document.getElementById('histCount').textContent = rows.length;
+      if (!rows.length) return;
+      tbody.innerHTML = rows.map(row => {
+        const isOk = row.status === 'Accepted';
+        const t = row.timestamp ? new Date(row.timestamp).toLocaleString('en-IN', {
+          month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
+        }) : '—';
+        return `<tr>
+          <td class="hist-num">#${row.problem_number}</td>
+          <td>${escHtml(row.problem_title || '—')}</td>
+          <td><span class="badge ${isOk ? 'badge-accepted' : 'badge-error'}">${escHtml(row.status)}</span></td>
+          <td><span class="hist-time">${escHtml(row.runtime || '—')}</span></td>
+          <td><span class="hist-time">${t}</span></td>
+        </tr>`;
+      }).join('');
+    } catch (_) {}
+  }
+
+  // ── Solve ────────────────────────────────────────────────────────────────────
+  async function startSolve() {
+    const num = parseInt(document.getElementById('problemNum').value);
+    if (!num || num < 1) {
+      pulse(document.getElementById('problemNum'));
+      return;
+    }
+
+    const btn = document.getElementById('solveBtn');
+    btn.disabled = true;
+    btn.innerHTML = `<span class="spinner"></span> Working…`;
+
+    // Reset steps
+    resetSteps();
+    document.getElementById('statusBox').style.display = 'block';
+    document.getElementById('resultCard').style.display = 'none';
+
+    setStep(1, 'active');
+
+    try {
+      // Single API call — backend handles all steps
+      // We simulate step progression on the frontend while waiting
+      const progressTimer = simulateProgress();
+
+      const resp = await fetch(`${API}/api/solve`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ problem_number: num })
+      });
+
+      clearInterval(progressTimer);
+
+      if (!resp.ok) {
+        const err = await resp.json();
+        setStep(getCurrentStep(), 'error');
+        setStepDetail(getCurrentStep(), err.detail || 'Request failed');
+        throw new Error(err.detail || resp.statusText);
+      }
+
+      const data = await resp.json();
+
+      // Mark all steps done
+      [1,2,3,4].forEach(i => setStep(i, 'done'));
+
+      // Populate result card
+      document.getElementById('rTitle').textContent = `${data.problem_number}. ${data.title}`;
+      document.getElementById('rNum').textContent = `#${data.problem_number}`;
+      document.getElementById('rRuntime').textContent = data.runtime || 'N/A';
+      document.getElementById('rMemory').textContent = data.memory || 'N/A';
+      document.getElementById('rLink').href = data.leetcode_url;
+
+      const diff = (data.difficulty || '').toLowerCase();
+      const diffEl = document.getElementById('rDiff');
+      diffEl.textContent = data.difficulty || '—';
+      diffEl.className = `badge badge-${diff}`;
+
+      const statusEl = document.getElementById('rStatus');
+      const isOk = data.submission_status === 'Accepted';
+      statusEl.textContent = data.submission_status || 'N/A';
+      statusEl.className = `badge ${isOk ? 'badge-accepted' : 'badge-error'}`;
+
+      document.getElementById('codeContent').innerHTML = syntaxHighlight(data.solution || '');
+      document.getElementById('resultCard').style.display = 'block';
+
+      loadStats();
+      loadHistory();
+
+    } catch (e) {
+      console.error(e);
+    } finally {
+      btn.disabled = false;
+      btn.innerHTML = `<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5,3 13,8 5,13"/></svg> Solve &amp; Submit`;
+    }
+  }
+
+  let _currentStep = 1;
+  function getCurrentStep() { return _currentStep; }
+
+  function simulateProgress() {
+    _currentStep = 1;
+    setStep(1, 'active');
+    const timings = [0, 4000, 12000, 25000];
+    timings.forEach((t, i) => {
+      if (i === 0) return;
+      setTimeout(() => {
+        setStep(i, 'done');
+        setStep(i + 1, 'active');
+        _currentStep = i + 1;
+      }, t);
+    });
+    return setInterval(() => {}, 9999999); // dummy interval
+  }
+
+  function setStep(n, state) {
+    const el = document.getElementById(`step${n}`);
+    if (!el) return;
+    el.className = `step ${state}`;
+    const icon = el.querySelector('.step-icon');
+    if (state === 'done') icon.innerHTML = '✓';
+    else if (state === 'error') icon.innerHTML = '✕';
+    else icon.innerHTML = n;
+  }
+
+  function setStepDetail(n, msg) {
+    const el = document.getElementById(`step${n}d`);
+    if (el) el.textContent = msg;
+  }
+
+  function resetSteps() {
+    [1,2,3,4].forEach(i => {
+      setStep(i, '');
+      const icon = document.getElementById(`step${i}`)?.querySelector('.step-icon');
+      if (icon) icon.innerHTML = i;
+    });
+  }
+
+  // ── Copy code ────────────────────────────────────────────────────────────────
+  function copyCode() {
+    const text = document.getElementById('codeContent').textContent;
+    navigator.clipboard.writeText(text).then(() => {
+      const btn = document.querySelector('.copy-btn');
+      btn.textContent = 'Copied!';
+      setTimeout(() => btn.textContent = 'Copy', 2000);
+    });
+  }
+
+  // ── Syntax highlight (simple regex) ─────────────────────────────────────────
+  function syntaxHighlight(code) {
+    code = escHtml(code);
+    const rules = [
+      [/\b(def|class|return|if|elif|else|for|while|in|not|and|or|import|from|as|with|try|except|pass|None|True|False|lambda|yield|self)\b/g, 'kw'],
+      [/(#[^\n]*)/g, 'cm'],
+      [/("[^"]*"|'[^']*')/g, 'st'],
+      [/\b([A-Z][a-zA-Z0-9_]*)\b/g, 'cn'],
+      [/\b(\d+)\b/g, 'nb'],
+    ];
+    for (const [re, cls] of rules) {
+      code = code.replace(re, `<span class="${cls}">$1</span>`);
+    }
+    return code;
+  }
+
+  function escHtml(s) {
+    return String(s)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+
+  function pulse(el) {
+    el.style.borderColor = 'var(--red)';
+    el.focus();
+    setTimeout(() => el.style.borderColor = '', 1200);
+  }
+
+  // ── Init ─────────────────────────────────────────────────────────────────────
+  loadStats();
+  loadHistory();
+</script>
+</body>
+</html>
